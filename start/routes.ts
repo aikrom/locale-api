@@ -34,3 +34,9 @@ Route.group(() => {
   .as('users')
   .prefix('users')
   .middleware('auth')
+
+Route.group(() => {
+  Route.get('languages', 'Common/LanguagesController.find').as('languages.find')
+})
+  .prefix('common')
+  .as('common')
