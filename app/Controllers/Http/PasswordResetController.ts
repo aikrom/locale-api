@@ -38,6 +38,7 @@ export default class PasswordResetController {
       { expiresIn: '30m' }
     )
 
+    // TODO: Send email
     console.log(signature)
 
     /**

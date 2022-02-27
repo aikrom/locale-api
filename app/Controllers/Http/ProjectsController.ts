@@ -1,34 +1,23 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Project from 'App/Models/Project'
 import ProjectQuery from 'App/Queries/ProjectQuery'
+import FilterUtil from 'App/Shared/Utils/FilterUtil'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import ProjectCreateValidator from 'App/Validators/ProjectCreateValidator'
 import ProjectUpdateValidator from 'App/Validators/ProjectUpdateValidator'
 
 export default class ProjectsController {
   public async find({ auth, request }: HttpContextContract) {
-    const query = auth.user!.related('projects').query()
     const pagination = PaginationUtil.fromInput(request)
 
-    const filter = {
+    const projectQuery = FilterUtil.filter(auth.user!.related('projects').query<Project>(), {
       name: {
         value: request.input('name'),
-        query: (value: string) => ['LIKE', `%${value}%`],
+        buidler: (value, query) => query.where('name', 'LIKE', `%${value}%`),
       },
-    }
+    })
 
-    Object.entries(filter)
-      .filter(([, schema]) => !!schema.value)
-      .forEach(([key, schema], idx) => {
-        const schemaQuery = schema.query(schema.value)
-        if (idx === 0) {
-          query.where(key, schemaQuery[0], schemaQuery[1])
-        } else {
-          query.andWhere(key, schemaQuery[0], schemaQuery[1])
-        }
-      })
-
-    return await query.paginate(...pagination)
+    return await projectQuery.paginate(...pagination)
   }
 
   public async findById({ bouncer, request }: HttpContextContract) {
