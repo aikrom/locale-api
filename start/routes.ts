@@ -21,9 +21,9 @@
 import Route from '@ioc:Adonis/Core/Route'
 
 Route.group(() => {
-  Route.post('sign-in', 'Auth/AuthController.signIn').as('sign-in')
-  Route.post('sign-up', 'Auth/AuthController.signUp').as('sign-up')
-  Route.post('logout', 'Auth/AuthController.logout').as('logout').middleware('auth')
+  Route.post('sign-in', 'AuthController.signIn').as('sign-in')
+  Route.post('sign-up', 'AuthController.signUp').as('sign-up')
+  Route.post('logout', 'AuthController.logout').as('logout').middleware('auth')
 })
   .as('auth')
   .prefix('auth')
