@@ -9,7 +9,7 @@ import CollectionUpdateValidator from 'App/Validators/CollectionUpdateValidator'
 
 export default class CollectionsController {
   public async find({ request, bouncer }: HttpContextContract) {
-    const projectId: number = request.param('id')
+    const projectId: number = request.param('project_id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('view', project)
     const query = project.related('collections').query()
@@ -41,7 +41,7 @@ export default class CollectionsController {
   }
 
   public async findById({ bouncer, request }: HttpContextContract) {
-    const projectId: number = request.param('id')
+    const projectId: number = request.param('project_id')
     const collectionId: number = request.param('id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
@@ -50,10 +50,11 @@ export default class CollectionsController {
     return collection
   }
 
-  public async create({ auth, request }: HttpContextContract) {
-    const projectId: number = request.param('id')
+  public async create({ auth, bouncer, request }: HttpContextContract) {
+    const projectId: number = request.param('project_id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const payload = await request.validate(CollectionCreateValidator)
+    await bouncer.with('CollectionPolicy').authorize('create', project)
 
     const isCodeExists = await CollectionQuery.findByCode(payload.code)
 
@@ -70,7 +71,7 @@ export default class CollectionsController {
 
   public async update({ request, bouncer }: HttpContextContract) {
     const collectionId: number = request.param('id')
-    const projectId: number = request.param('id')
+    const projectId: number = request.param('project_id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('update', project, collection)
@@ -89,7 +90,7 @@ export default class CollectionsController {
 
   public async delete({ bouncer, request }: HttpContextContract) {
     const collectionId: number = request.param('id')
-    const projectId: number = request.param('id')
+    const projectId: number = request.param('project_id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
