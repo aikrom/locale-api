@@ -1,45 +1,66 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import BadRequestException from 'App/Exceptions/BadRequestException'
+import NotFoundException from 'App/Exceptions/NotFoundException'
 import Language from 'App/Models/Language'
+import FilterUtil from 'App/Shared/Utils/FilterUtil'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 
 export default class LanguagesController {
+  /**
+   * Filter language
+   *
+   * @param ctx - Http context
+   */
   public async find({ request }: HttpContextContract) {
-    const query = Language.query()
-    const pagination = PaginationUtil.fromInput(request.input)
+    /**
+     * Get pagination parameters from a request
+     */
+    const pagination = PaginationUtil.fromInput(request)
 
-    const filter = {
+    /**
+     * Build a query with filters
+     */
+    const query = FilterUtil.where(Language.query(), {
       name: {
         value: request.input('name'),
-        query: (value: string) => ['LIKE', `%${value}%`],
+        builder: (value: string) => ['LIKE', `%${value}%`],
       },
       code: {
         value: request.input('code'),
-        query: (value: string) => ['=', value],
+        builder: (value: string) => ['=', value],
       },
-    }
-
-    Object.entries(filter)
-      .filter(([, schema]) => !!schema.value)
-      .forEach(([key, schema], idx) => {
-        const schemaQuery = schema.query(schema.value)
-        if (idx === 0) {
-          query.where(key, schemaQuery[0], schemaQuery[1])
-        } else {
-          query.andWhere(key, schemaQuery[0], schemaQuery[1])
-        }
-      })
+    })
 
     return await query.paginate(...pagination)
   }
 
+  /**
+   * Find language by code
+   *
+   * @param ctx - Http context
+   */
   public async findByCode({ request }: HttpContextContract) {
+    /**
+     * Get code from request params
+     */
     const languageCode: string = request.param('code')
 
-    if (!languageCode) {
+    /**
+     * Check is language code is 'string'
+     */
+    if (typeof languageCode !== 'string') {
       throw new BadRequestException()
     }
 
-    return await Language.findByOrFail('code', languageCode)
+    /**
+     * Find language
+     */
+    const language = await Language.findBy('code', languageCode)
+
+    if (!language) {
+      throw new NotFoundException()
+    }
+
+    return language
   }
 }

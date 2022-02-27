@@ -2,6 +2,7 @@ import Encryption from '@ioc:Adonis/Core/Encryption'
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Route from '@ioc:Adonis/Core/Route'
 import Database from '@ioc:Adonis/Lucid/Database'
+import BadRequestException from 'App/Exceptions/BadRequestException'
 import PasswordReset from 'App/Models/PasswordReset'
 import UserQuery from 'App/Queries/UserQuery'
 import PasswordResetValidator from 'App/Validators/PasswordResetValidator'
@@ -13,13 +14,11 @@ export default class PasswordResetController {
    *
    * @param ctx - Http context
    */
-  public async forgot({ request, response }: HttpContextContract) {
+  public async forgot({ request }: HttpContextContract) {
     /**
      * Get email address from request body
      */
     const email = request.input('email')
-
-    console.log({ email })
 
     /**
      * Find a user with a given email address
@@ -50,7 +49,7 @@ export default class PasswordResetController {
       userId: user.id,
     })
 
-    return response.ok('OK')
+    return 'OK'
   }
 
   /**
@@ -58,12 +57,12 @@ export default class PasswordResetController {
    *
    * @param ctx - Http context
    */
-  public async handShake({ request, response }: HttpContextContract) {
+  public async handShake({ request }: HttpContextContract) {
     /**
      * Validate reguest signature
      */
     if (!request.hasValidSignature()) {
-      return response.badRequest('Invalid signature')
+      throw new BadRequestException('Invalid signature')
     }
 
     /**
@@ -80,7 +79,7 @@ export default class PasswordResetController {
    *
    * @param ctx - Http context
    */
-  public async reset({ request, response }: HttpContextContract) {
+  public async reset({ request }: HttpContextContract) {
     /**
      * Get signature from request query param and decrypt
      */
@@ -91,7 +90,7 @@ export default class PasswordResetController {
      * Check is signature valid (decrypted)
      */
     if (!email) {
-      return response.badRequest('Invalid signature')
+      throw new BadRequestException('Invalid signature')
     }
 
     /**
@@ -114,6 +113,6 @@ export default class PasswordResetController {
      */
     await Database.query().from('api_tokens').where('user_id', user.id).delete()
 
-    return response.ok('OK')
+    return 'OK'
   }
 }

@@ -20,6 +20,9 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
+/**
+ * Auth routes
+ */
 Route.group(() => {
   Route.post('sign-in', 'AuthController.signIn').as('sign-in')
   Route.post('sign-up', 'AuthController.signUp').as('sign-up')
@@ -28,12 +31,18 @@ Route.group(() => {
   .as('auth')
   .prefix('auth')
 
+/**
+ * User password reset routes
+ */
 Route.group(() => {
   Route.post('forgot', 'PasswordResetController.forgot').as('forgot')
   Route.post('reset/:email', 'PasswordResetController.handShake').as('verify')
   Route.post('reset', 'PasswordResetController.reset').as('reset')
 }).as('password-reset')
 
+/**
+ * User routes
+ */
 Route.group(() => {
   Route.post('me', 'UsersController.me').as('me')
 })
@@ -41,12 +50,18 @@ Route.group(() => {
   .prefix('users')
   .middleware('auth')
 
+/**
+ * Common routes
+ */
 Route.group(() => {
   Route.get('languages', 'Common/LanguagesController.find').as('languages.find')
 })
   .prefix('common')
   .as('common')
 
+/**
+ * Projects routes
+ */
 Route.group(() => {
   Route.get('/', 'ProjectsController.find').as('find')
   Route.get('/:id', 'ProjectsController.findById').as('find_by_id')
@@ -54,6 +69,9 @@ Route.group(() => {
   Route.route('/:id', ['PUT', 'PATCH'], 'ProjectsController.update').as('update')
   Route.delete('/:id', 'ProjectsController.delete').as('delete')
 
+  /**
+   * Project collections routes
+   */
   Route.group(() => {
     Route.get('/', 'CollectionsController.find').as('find')
     Route.get('/:id', 'CollectionsController.findById').as('find_by_id')
@@ -61,6 +79,9 @@ Route.group(() => {
     Route.route('/:id', ['PUT', 'PATCH'], 'CollectionsController.update').as('update')
     Route.delete('/:id', 'CollectionsController.delete').as('delete')
 
+    /**
+     * Collection keys routes
+     */
     Route.group(() => {
       Route.get('/', 'KeysController.find').as('find')
       Route.get('/:id', 'KeysController.findById').as('find_by_id')
@@ -68,6 +89,9 @@ Route.group(() => {
       Route.route('/:id', ['PUT', 'PATCH'], 'KeysController.update').as('update')
       Route.delete('/:id', 'KeysController.delete').as('delete')
 
+      /**
+       * Key values routes
+       */
       Route.group(() => {
         Route.get('/', 'KeyValuesController.find').as('find')
         Route.get('/:id', 'KeyValuesController.findById').as('find_by_id')
