@@ -40,3 +40,13 @@ Route.group(() => {
 })
   .prefix('common')
   .as('common')
+
+Route.group(() => {
+  Route.get('/', 'Projects/ProjectsController.find').as('find')
+  Route.get('/:id', 'Projects/ProjectsController.findById').as('find_by_id')
+  Route.post('/', 'Projects/ProjectsController.create').as('create')
+  Route.route('/:id', ['PUT', 'PATCH'], 'Projects/ProjectsController.update').as('update')
+  Route.delete('/:id', 'Projects/ProjectsController.delete').as('delete')
+})
+  .prefix('users/projects')
+  .as('users.projects')
