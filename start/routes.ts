@@ -50,3 +50,13 @@ Route.group(() => {
 })
   .prefix('users/projects')
   .as('users.projects')
+
+Route.group(() => {
+  Route.get('/', 'Collections/CollectionsController.find').as('find')
+  Route.get('/:id', 'Collections/CollectionsController.findById').as('find_by_id')
+  Route.post('/', 'Collections/CollectionsController.create').as('create')
+  Route.route('/:id', ['PUT', 'PATCH'], 'Collections/CollectionsController.update').as('update')
+  Route.delete('/:id', 'Collections/CollectionsController.delete').as('delete')
+})
+  .prefix('users/projects/:project_id/collections')
+  .as('users.projects.collections')

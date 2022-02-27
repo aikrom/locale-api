@@ -7,8 +7,8 @@ import ProjectCreateValidator from 'App/Validators/ProjectCreateValidator'
 import ProjectUpdateValidator from 'App/Validators/ProjectUpdateValidator'
 
 export default class ProjectsController {
-  public async find({ request }: HttpContextContract) {
-    const query = Project.query()
+  public async find({ auth, request }: HttpContextContract) {
+    const query = auth.user!.related('projects').query()
     const pagination = PaginationUtil.fromInput(request.input)
 
     const filter = {

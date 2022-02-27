@@ -3,10 +3,13 @@ import {
   belongsTo,
   BelongsTo,
   column,
+  HasMany,
+  hasMany,
   manyToMany,
   ManyToMany,
 } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
+import Collection from './Collection'
 import User from './User'
 
 export default class Project extends BaseModel {
@@ -33,4 +36,7 @@ export default class Project extends BaseModel {
 
   @manyToMany(() => User)
   public users: ManyToMany<typeof User>
+
+  @hasMany(() => Collection)
+  public collections: HasMany<typeof Collection>
 }
