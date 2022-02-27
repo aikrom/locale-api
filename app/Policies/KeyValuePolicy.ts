@@ -13,7 +13,11 @@ export default class KeyValuePolicy extends BasePolicy {
     key: Key,
     value: KeyValue
   ) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
     return (
       !!isProjectAttachedToUser &&
       project.id === collection.projectId &&
@@ -23,7 +27,11 @@ export default class KeyValuePolicy extends BasePolicy {
   }
 
   public async create(user: User, project: Project) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
     return !!isProjectAttachedToUser
   }
 

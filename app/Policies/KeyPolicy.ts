@@ -6,7 +6,11 @@ import User from 'App/Models/User'
 
 export default class KeyPolicy extends BasePolicy {
   public async view(user: User, project: Project, collection: Collection, key: Key) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
     return (
       !!isProjectAttachedToUser &&
       project.id === collection.projectId &&
@@ -15,7 +19,11 @@ export default class KeyPolicy extends BasePolicy {
   }
 
   public async create(user: User, project: Project) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
     return !!isProjectAttachedToUser
   }
 

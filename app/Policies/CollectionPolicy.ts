@@ -5,12 +5,21 @@ import User from 'App/Models/User'
 
 export default class CollectionPolicy extends BasePolicy {
   public async view(user: User, project: Project, collection: Collection) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
+    console.log({ isProjectAttachedToUser, project, collection })
     return !!isProjectAttachedToUser && project.id === collection.projectId
   }
 
   public async create(user: User, project: Project) {
-    const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
+    const isProjectAttachedToUser = await project
+      .related('users')
+      .query()
+      .where('user_id', user.id)
+      .first()
     return !!isProjectAttachedToUser
   }
 

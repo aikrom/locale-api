@@ -19,11 +19,11 @@ export default class CollectionsController {
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
 
     const query = collection.related('keys').query()
-    const pagination = PaginationUtil.fromInput(request.input)
+    const pagination = PaginationUtil.fromInput(request)
 
     const filter = {
       key: {
-        value: request.input('name'),
+        value: request.input('key'),
         query: (value: string) => ['LIKE', `%${value}%`],
       },
     }

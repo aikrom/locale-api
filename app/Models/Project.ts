@@ -31,7 +31,9 @@ export default class Project extends BaseModel {
   @column()
   public createdByUserId: number
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'createdByUserId',
+  })
   public createdByUser: BelongsTo<typeof User>
 
   @manyToMany(() => User)

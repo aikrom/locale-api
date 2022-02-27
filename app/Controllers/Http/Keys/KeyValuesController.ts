@@ -22,7 +22,7 @@ export default class CollectionsController {
     await bouncer.with('KeyPolicy').authorize('view', project, collection, key)
 
     const query = key.related('values').query()
-    const pagination = PaginationUtil.fromInput(request.input)
+    const pagination = PaginationUtil.fromInput(request)
 
     const filter = {
       value: {
@@ -87,7 +87,7 @@ export default class CollectionsController {
     const keyValue = await KeyValue.create(payload)
     await keyValue.related('key').associate(key)
 
-    return key
+    return keyValue
   }
 
   public async update({ request, bouncer }: HttpContextContract) {

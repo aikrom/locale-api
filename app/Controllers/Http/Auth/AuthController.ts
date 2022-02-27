@@ -7,9 +7,9 @@ export default class AuthController {
   public async signUp({ request }: HttpContextContract) {
     const payload = await request.validate(UserCreateValidator)
 
-    const isUnique = User.findBy('email', payload.email)
+    const isUnique = await User.findBy('email', payload.email)
 
-    if (!isUnique) {
+    if (isUnique) {
       throw new AlreadyExistsException('A user with this email already exists')
     }
 

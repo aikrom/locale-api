@@ -50,6 +50,8 @@ Route.group(() => {
 })
   .prefix('users/projects')
   .as('users.projects')
+  .middleware('auth')
+  .where('id', Route.matchers.number())
 
 Route.group(() => {
   Route.get('/', 'Collections/CollectionsController.find').as('find')
@@ -60,6 +62,9 @@ Route.group(() => {
 })
   .prefix('users/projects/:project_id/collections')
   .as('users.projects.collections')
+  .middleware('auth')
+  .where('project_id', Route.matchers.number())
+  .where('id', Route.matchers.number())
 
 Route.group(() => {
   Route.get('/', 'Keys/KeysController.find').as('find')
@@ -70,6 +75,10 @@ Route.group(() => {
 })
   .prefix('users/projects/:project_id/collections/:collection_id/keys')
   .as('users.projects.collections.keys')
+  .middleware('auth')
+  .where('project_id', Route.matchers.number())
+  .where('collection_id', Route.matchers.number())
+  .where('id', Route.matchers.number())
 
 Route.group(() => {
   Route.get('/', 'Keys/KeyValuesController.find').as('find')
@@ -80,3 +89,8 @@ Route.group(() => {
 })
   .prefix('users/projects/:project_id/collections/:collection_id/keys/:key_id/values')
   .as('users.projects.collections.keys.values')
+  .middleware('auth')
+  .where('project_id', Route.matchers.number())
+  .where('collection_id', Route.matchers.number())
+  .where('key_id', Route.matchers.number())
+  .where('id', Route.matchers.number())

@@ -8,7 +8,7 @@ import ProjectUpdateValidator from 'App/Validators/ProjectUpdateValidator'
 export default class ProjectsController {
   public async find({ auth, request }: HttpContextContract) {
     const query = auth.user!.related('projects').query()
-    const pagination = PaginationUtil.fromInput(request.input)
+    const pagination = PaginationUtil.fromInput(request)
 
     const filter = {
       name: {
@@ -42,7 +42,7 @@ export default class ProjectsController {
     const payload = await request.validate(ProjectCreateValidator)
     const project = await Project.create(payload)
     await project.related('createdByUser').associate(auth.user!)
-    await project.related('users').attach([auth.user!.id])
+    await auth.user!.related('projects').attach([project.id])
     return project
   }
 

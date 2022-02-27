@@ -3,9 +3,9 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Pagination from '../Types/Pagination'
 
 class PaginationUtil {
-  public fromInput(input: HttpContextContract['request']['input']): Pagination {
-    let page = +input('page')
-    let limit = +input('limit')
+  public fromInput(request: HttpContextContract['request']): Pagination {
+    let page = +request.input('page')
+    let limit = +request.input('limit')
 
     if (!page || isNaN(page)) {
       page = Env.get('DEFAULT_PAGE')

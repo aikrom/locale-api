@@ -13,7 +13,7 @@ export default class CollectionsController {
     const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('view', project)
     const query = project.related('collections').query()
-    const pagination = PaginationUtil.fromInput(request.input)
+    const pagination = PaginationUtil.fromInput(request)
 
     const filter = {
       name: {
@@ -21,7 +21,7 @@ export default class CollectionsController {
         query: (value: string) => ['LIKE', `%${value}%`],
       },
       code: {
-        value: request.input('name'),
+        value: request.input('code'),
         query: (value: string) => ['=', value],
       },
     }
