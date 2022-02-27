@@ -27,3 +27,10 @@ Route.group(() => {
 })
   .as('auth')
   .prefix('auth')
+
+Route.group(() => {
+  Route.post('me', 'Users/UsersController.me').as('me')
+})
+  .as('users')
+  .prefix('users')
+  .middleware('auth')
