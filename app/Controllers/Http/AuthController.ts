@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import AlreadyExistsException from 'App/Exceptions/AlreadyExistException'
 import User from 'App/Models/User'
+import UserQuery from 'App/Queries/UserQuery'
 import UserCreateValidator from 'App/Validators/UserCreateValidator'
 
 export default class AuthController {
@@ -19,7 +20,7 @@ export default class AuthController {
      * Get user by email to check if any user exists
      * Note: Emails should be unique.
      */
-    const isUnique = await User.findBy('email', payload.email)
+    const isUnique = await UserQuery.findByEmail(payload.email)
 
     /**
      * Throw error if user with email already exists

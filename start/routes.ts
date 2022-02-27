@@ -29,6 +29,12 @@ Route.group(() => {
   .prefix('auth')
 
 Route.group(() => {
+  Route.post('forgot', 'PasswordResetController.forgot').as('forgot')
+  Route.post('reset/:email', 'PasswordResetController.handShake').as('verify')
+  Route.post('reset', 'PasswordResetController.reset').as('reset')
+}).as('password-reset')
+
+Route.group(() => {
   Route.post('me', 'Users/UsersController.me').as('me')
 })
   .as('users')
