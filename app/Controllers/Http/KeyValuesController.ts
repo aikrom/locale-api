@@ -5,6 +5,7 @@ import CollectionQuery from 'App/Queries/CollectionQuery'
 import KeyQuery from 'App/Queries/KeyQuery'
 import KeyValueQuery from 'App/Queries/KeyValueQuery'
 import ProjectQuery from 'App/Queries/ProjectQuery'
+import FilterUtil from 'App/Shared/Utils/FilterUtil'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import KeyValueCreateValidator from 'App/Validators/KeyValueCreateValidator'
 import KeyValueUpdateValidator from 'App/Validators/KeyValueUpdateValidator'
@@ -21,30 +22,18 @@ export default class CollectionsController {
 
     await bouncer.with('KeyPolicy').authorize('view', project, collection, key)
 
-    const query = key.related('values').query()
     const pagination = PaginationUtil.fromInput(request)
 
-    const filter = {
+    const query = FilterUtil.where(key.related('values').query<KeyValue>(), {
       value: {
         value: request.input('value'),
-        query: (value: string) => ['LIKE', `%${value}%`],
+        builder: (value) => ['LIKE', `%${value}%`],
       },
       language: {
         value: request.input('language'),
-        query: (value: string) => ['=', value],
+        builder: (value) => ['=', value],
       },
-    }
-
-    Object.entries(filter)
-      .filter(([, schema]) => !!schema.value)
-      .forEach(([key, schema], idx) => {
-        const schemaQuery = schema.query(schema.value)
-        if (idx === 0) {
-          query.where(key, schemaQuery[0], schemaQuery[1])
-        } else {
-          query.andWhere(key, schemaQuery[0], schemaQuery[1])
-        }
-      })
+    })
 
     return await query.paginate(...pagination)
   }

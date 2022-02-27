@@ -4,6 +4,7 @@ import Key from 'App/Models/Key'
 import CollectionQuery from 'App/Queries/CollectionQuery'
 import KeyQuery from 'App/Queries/KeyQuery'
 import ProjectQuery from 'App/Queries/ProjectQuery'
+import FilterUtil from 'App/Shared/Utils/FilterUtil'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import KeyCreateValidator from 'App/Validators/KeyCreateValidator'
 import KeyUpdateValidator from 'App/Validators/KeyUpdateValidator'
@@ -18,26 +19,14 @@ export default class CollectionsController {
 
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
 
-    const query = collection.related('keys').query()
     const pagination = PaginationUtil.fromInput(request)
 
-    const filter = {
+    const query = FilterUtil.where(collection.related('keys').query<Key>(), {
       key: {
         value: request.input('key'),
-        query: (value: string) => ['LIKE', `%${value}%`],
+        builder: (value) => ['LIKE', `%${value}%`],
       },
-    }
-
-    Object.entries(filter)
-      .filter(([, schema]) => !!schema.value)
-      .forEach(([key, schema], idx) => {
-        const schemaQuery = schema.query(schema.value)
-        if (idx === 0) {
-          query.where(key, schemaQuery[0], schemaQuery[1])
-        } else {
-          query.andWhere(key, schemaQuery[0], schemaQuery[1])
-        }
-      })
+    })
 
     return await query.paginate(...pagination)
   }

@@ -3,6 +3,7 @@ import AlreadyExistsException from 'App/Exceptions/AlreadyExistException'
 import Collection from 'App/Models/Collection'
 import CollectionQuery from 'App/Queries/CollectionQuery'
 import ProjectQuery from 'App/Queries/ProjectQuery'
+import FilterUtil from 'App/Shared/Utils/FilterUtil'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import CollectionCreateValidator from 'App/Validators/CollectionCreateValidator'
 import CollectionUpdateValidator from 'App/Validators/CollectionUpdateValidator'
@@ -12,30 +13,18 @@ export default class CollectionsController {
     const projectId: number = request.param('project_id')
     const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('view', project)
-    const query = project.related('collections').query()
     const pagination = PaginationUtil.fromInput(request)
 
-    const filter = {
+    const query = FilterUtil.where(project.related('collections').query<Collection>(), {
       name: {
         value: request.input('name'),
-        query: (value: string) => ['LIKE', `%${value}%`],
+        builder: (value) => ['LIKE', `%${value}%`],
       },
       code: {
         value: request.input('code'),
-        query: (value: string) => ['=', value],
+        builder: (value: string) => ['=', value],
       },
-    }
-
-    Object.entries(filter)
-      .filter(([, schema]) => !!schema.value)
-      .forEach(([key, schema], idx) => {
-        const schemaQuery = schema.query(schema.value)
-        if (idx === 0) {
-          query.where(key, schemaQuery[0], schemaQuery[1])
-        } else {
-          query.andWhere(key, schemaQuery[0], schemaQuery[1])
-        }
-      })
+    })
 
     return await query.paginate(...pagination)
   }

@@ -1,24 +1,25 @@
 import { LucidModel, ModelQueryBuilderContract } from '@ioc:Adonis/Lucid/Orm'
 
-type Schema<T extends LucidModel = any> = Record<
+type WhereQueryBuilder = (value: any) => string[]
+
+type Schema = Record<
   string,
   {
     value: any
-    buidler: QueryBuilder<T>
+    builder: WhereQueryBuilder
   }
 >
 
-type QueryBuilder<T extends LucidModel = any, R = ModelQueryBuilderContract<T>> = (
-  value: any,
-  query: R,
-  isFirst: boolean
-) => void
-
 class FilterUtil {
-  public filter<T extends LucidModel = any>(query: ModelQueryBuilderContract<T>, schema: Schema) {
-    Object.keys(schema).forEach((key, idx) =>
-      schema[key].buidler(schema[key].value, query, idx === 0)
-    )
+  public where<T extends LucidModel = any>(query: ModelQueryBuilderContract<T>, schema: Schema) {
+    Object.keys(schema).forEach((key, idx) => {
+      const values = schema[key].builder(schema[key].value) as [string, string]
+      if (idx === 0) {
+        query.where(key, ...values)
+      } else {
+        query.andWhere(key, ...values)
+      }
+    })
     return query
   }
 }

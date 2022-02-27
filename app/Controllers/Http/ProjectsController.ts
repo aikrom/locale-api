@@ -10,14 +10,14 @@ export default class ProjectsController {
   public async find({ auth, request }: HttpContextContract) {
     const pagination = PaginationUtil.fromInput(request)
 
-    const projectQuery = FilterUtil.filter(auth.user!.related('projects').query<Project>(), {
+    const query = FilterUtil.where(auth.user!.related('projects').query<Project>(), {
       name: {
         value: request.input('name'),
-        buidler: (value, query) => query.where('name', 'LIKE', `%${value}%`),
+        builder: (value) => ['LIKE', `%${value}%`],
       },
     })
 
-    return await projectQuery.paginate(...pagination)
+    return await query.paginate(...pagination)
   }
 
   public async findById({ bouncer, request }: HttpContextContract) {
