@@ -6,7 +6,5 @@ export default class KeyCreateValidator {
 
   public schema = schema.create({
     key: schema.string({ trim: true }),
-    value: schema.string({ trim: true }),
-    language: schema.string({ trim: true }),
   })
 }

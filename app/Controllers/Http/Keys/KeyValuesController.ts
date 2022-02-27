@@ -1,30 +1,37 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import AlreadyExistsException from 'App/Exceptions/AlreadyExistException'
-import Key from 'App/Models/Key'
+import KeyValue from 'App/Models/KeyValue'
 import CollectionQuery from 'App/Queries/CollectionQuery'
 import KeyQuery from 'App/Queries/KeyQuery'
+import KeyValueQuery from 'App/Queries/KeyValueQuery'
 import ProjectQuery from 'App/Queries/ProjectQuery'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
-import KeyCreateValidator from 'App/Validators/KeyCreateValidator'
-import KeyUpdateValidator from 'App/Validators/KeyUpdateValidator'
+import KeyValueCreateValidator from 'App/Validators/KeyValueCreateValidator'
+import KeyValueUpdateValidator from 'App/Validators/KeyValueUpdateValidator'
 
 export default class CollectionsController {
   public async find({ request, bouncer }: HttpContextContract) {
     const projectId: number = request.param('project_id')
     const collectionId: number = request.param('collection_id')
+    const keyId: number = request.param('key_id')
 
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
+    const key = await KeyQuery.findByIdOrFail(keyId)
 
-    await bouncer.with('CollectionPolicy').authorize('view', project, collection)
+    await bouncer.with('KeyPolicy').authorize('view', project, collection, key)
 
-    const query = collection.related('keys').query()
+    const query = key.related('values').query()
     const pagination = PaginationUtil.fromInput(request.input)
 
     const filter = {
-      key: {
-        value: request.input('name'),
+      value: {
+        value: request.input('value'),
         query: (value: string) => ['LIKE', `%${value}%`],
+      },
+      language: {
+        value: request.input('language'),
+        query: (value: string) => ['=', value],
       },
     }
 
@@ -45,13 +52,15 @@ export default class CollectionsController {
   public async findById({ bouncer, request }: HttpContextContract) {
     const projectId: number = request.param('project_id')
     const collectionId: number = request.param('collection_id')
-    const keyId: number = request.param('id')
+    const keyId: number = request.param('key_id')
+    const keyValueId: number = request.param('id')
 
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     const key = await KeyQuery.findByIdOrFail(keyId)
+    const keyValue = await KeyValueQuery.findByIdOrFail(keyValueId)
 
-    await bouncer.with('KeyPolicy').authorize('view', project, collection, key)
+    await bouncer.with('KeyValuePolicy').authorize('view', project, collection, key, keyValue)
 
     return key
   }
@@ -59,22 +68,24 @@ export default class CollectionsController {
   public async create({ request, bouncer }: HttpContextContract) {
     const projectId: number = request.param('project_id')
     const collectionId: number = request.param('collection_id')
+    const keyId: number = request.param('key_id')
 
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
+    const key = await KeyQuery.findByIdOrFail(keyId)
 
-    await bouncer.with('KeyPolicy').authorize('create', project)
+    await bouncer.with('KeyValuePolicy').authorize('create', project)
 
-    const payload = await request.validate(KeyCreateValidator)
+    const payload = await request.validate(KeyValueCreateValidator)
 
-    const isKeyExists = await KeyQuery.findByKey(payload.key)
+    const isKeyExists = await KeyValueQuery.findByKeyAndLanguage(key.id, payload.language)
 
-    if (isKeyExists && isKeyExists.collectionId === collection.id) {
+    if (isKeyExists) {
       throw new AlreadyExistsException('Key already exists')
     }
 
-    const key = await Key.create(payload)
-    await key.related('collection').associate(collection)
+    const keyValue = await KeyValue.create(payload)
+    await keyValue.related('key').associate(key)
 
     return key
   }
@@ -82,38 +93,42 @@ export default class CollectionsController {
   public async update({ request, bouncer }: HttpContextContract) {
     const projectId: number = request.param('project_id')
     const collectionId: number = request.param('collection_id')
-    const keyId: number = request.param('id')
+    const keyId: number = request.param('key_id')
+    const keyValueId: number = request.param('id')
 
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     const key = await KeyQuery.findByIdOrFail(keyId)
+    const keyValue = await KeyValueQuery.findByIdOrFail(keyValueId)
 
-    await bouncer.with('KeyPolicy').authorize('update', project, collection, key)
+    await bouncer.with('KeyValuePolicy').authorize('update', project, collection, key, keyValue)
 
-    const payload = await request.validate(KeyUpdateValidator)
+    const payload = await request.validate(KeyValueUpdateValidator)
 
-    if (payload.key) {
-      const isKeyExists = await KeyQuery.findByKey(payload.key)
+    if (payload.language) {
+      const isKeyExists = await KeyValueQuery.findByKeyAndLanguage(key.id, payload.language)
 
-      if (isKeyExists && isKeyExists.collectionId === collection.id) {
+      if (isKeyExists) {
         throw new AlreadyExistsException('Key already exists')
       }
     }
 
-    return key.merge(payload).save()
+    return keyValue.merge(payload).save()
   }
 
   public async delete({ bouncer, request }: HttpContextContract) {
     const projectId: number = request.param('project_id')
     const collectionId: number = request.param('collection_id')
-    const keyId: number = request.param('id')
+    const keyId: number = request.param('key_id')
+    const keyValueId: number = request.param('id')
 
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     const key = await KeyQuery.findByIdOrFail(keyId)
+    const keyValue = await KeyValueQuery.findByIdOrFail(keyValueId)
 
-    await bouncer.with('KeyPolicy').authorize('delete', project, collection, key)
+    await bouncer.with('KeyValuePolicy').authorize('delete', project, collection, key, keyValue)
 
-    return await key.delete()
+    return await keyValue.delete()
   }
 }

@@ -4,7 +4,7 @@ import Key from 'App/Models/Key'
 import Project from 'App/Models/Project'
 import User from 'App/Models/User'
 
-export default class KeysPolicy extends BasePolicy {
+export default class KeyPolicy extends BasePolicy {
   public async view(user: User, project: Project, collection: Collection, key: Key) {
     const isProjectAttachedToUser = await project.related('users').query().where('id', user.id)
     return (

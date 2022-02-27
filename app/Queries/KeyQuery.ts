@@ -16,8 +16,8 @@ class KeyQuery {
     return key
   }
 
-  public async findByKeyAndLanguage(key: string, language: string) {
-    return await Key.query().where('key', key).andWhere('language', language).first()
+  public async findByKey(key: string) {
+    return await Key.findBy('key', key)
   }
 }
 

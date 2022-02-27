@@ -1,6 +1,7 @@
-import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import Collection from './Collection'
+import KeyValue from './KeyValue'
 
 export default class Key extends BaseModel {
   @column({ isPrimary: true })
@@ -8,12 +9,6 @@ export default class Key extends BaseModel {
 
   @column()
   public key: string
-
-  @column()
-  public value: string
-
-  @column()
-  public language: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -26,4 +21,7 @@ export default class Key extends BaseModel {
 
   @belongsTo(() => Collection)
   public collection: BelongsTo<typeof Collection>
+
+  @hasMany(() => KeyValue)
+  public values: HasMany<typeof KeyValue>
 }

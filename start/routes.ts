@@ -60,3 +60,23 @@ Route.group(() => {
 })
   .prefix('users/projects/:project_id/collections')
   .as('users.projects.collections')
+
+Route.group(() => {
+  Route.get('/', 'Keys/KeysController.find').as('find')
+  Route.get('/:id', 'Keys/KeysController.findById').as('find_by_id')
+  Route.post('/', 'Keys/KeysController.create').as('create')
+  Route.route('/:id', ['PUT', 'PATCH'], 'Keys/KeysController.update').as('update')
+  Route.delete('/:id', 'Keys/KeysController.delete').as('delete')
+})
+  .prefix('users/projects/:project_id/collections/:collection_id/keys')
+  .as('users.projects.collections.keys')
+
+Route.group(() => {
+  Route.get('/', 'Keys/KeyValuesController.find').as('find')
+  Route.get('/:id', 'Keys/KeyValuesController.findById').as('find_by_id')
+  Route.post('/', 'Keys/KeyValuesController.create').as('create')
+  Route.route('/:id', ['PUT', 'PATCH'], 'Keys/KeyValuesController.update').as('update')
+  Route.delete('/:id', 'Keys/KeyValuesController.delete').as('delete')
+})
+  .prefix('users/projects/:project_id/collections/:collection_id/keys/:key_id/values')
+  .as('users.projects.collections.keys.values')

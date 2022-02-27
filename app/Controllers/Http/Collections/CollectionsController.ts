@@ -94,6 +94,6 @@ export default class CollectionsController {
     const project = await ProjectQuery.findByIdOrFail(projectId)
     const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
-    return await project.delete()
+    return await collection.delete()
   }
 }
