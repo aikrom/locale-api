@@ -1,29 +1,17 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import AlreadyExistsException from 'App/Exceptions/AlreadyExistException'
-import BadRequestException from 'App/Exceptions/BadRequestException'
-import NotFoundException from 'App/Exceptions/NotFoundException'
 import Collection from 'App/Models/Collection'
-import Project from 'App/Models/Project'
+import CollectionQuery from 'App/Queries/CollectionQuery'
+import ProjectQuery from 'App/Queries/ProjectQuery'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import CollectionCreateValidator from 'App/Validators/CollectionCreateValidator'
 import CollectionUpdateValidator from 'App/Validators/CollectionUpdateValidator'
 
 export default class CollectionsController {
   public async find({ request, bouncer }: HttpContextContract) {
-    const projectId = +request.param('id')
-
-    if (!projectId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('view', project)
-
     const query = project.related('collections').query()
     const pagination = PaginationUtil.fromInput(request.input)
 
@@ -53,41 +41,21 @@ export default class CollectionsController {
   }
 
   public async findById({ bouncer, request }: HttpContextContract) {
-    const collectionId = +request.param('id')
-    const projectId = +request.param('id')
-
-    if (!projectId || !collectionId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-    const collection = await Collection.find(collectionId)
-
-    if (!project || !collection) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const collectionId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
+    const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
 
     return collection
   }
 
   public async create({ auth, request }: HttpContextContract) {
-    const projectId = +request.param('id')
-
-    if (!projectId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
     const payload = await request.validate(CollectionCreateValidator)
 
-    const isCodeExists = await Collection.findBy('code', payload.code)
+    const isCodeExists = await CollectionQuery.findByCode(payload.code)
 
     if (isCodeExists && isCodeExists.projectId === project.id) {
       throw new AlreadyExistsException('A collection with this code already exists')
@@ -101,50 +69,30 @@ export default class CollectionsController {
   }
 
   public async update({ request, bouncer }: HttpContextContract) {
-    const collectionId = +request.param('id')
-    const projectId = +request.param('id')
-
-    if (!projectId || !collectionId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-    const collection = await Collection.find(collectionId)
-
-    if (!project || !collection) {
-      throw new NotFoundException()
-    }
-
+    const collectionId: number = request.param('id')
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
+    const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('update', project, collection)
-
     const payload = await request.validate(CollectionUpdateValidator)
 
-    const isCodeExists = await Collection.findBy('code', payload.code)
+    if (payload.code) {
+      const isCodeExists = await CollectionQuery.findByCode(payload.code)
 
-    if (isCodeExists && isCodeExists.projectId === project.id) {
-      throw new AlreadyExistsException('A collection with this code already exists')
+      if (isCodeExists && isCodeExists.projectId === project.id) {
+        throw new AlreadyExistsException('A collection with this code already exists')
+      }
     }
 
-    return project.merge(payload).save()
+    return collection.merge(payload).save()
   }
 
   public async delete({ bouncer, request }: HttpContextContract) {
-    const collectionId = +request.param('id')
-    const projectId = +request.param('id')
-
-    if (!projectId || !collectionId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-    const collection = await Collection.find(collectionId)
-
-    if (!project || !collection) {
-      throw new NotFoundException()
-    }
-
+    const collectionId: number = request.param('id')
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
+    const collection = await CollectionQuery.findByIdOrFail(collectionId)
     await bouncer.with('CollectionPolicy').authorize('view', project, collection)
-
     return await project.delete()
   }
 }

@@ -1,7 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import BadRequestException from 'App/Exceptions/BadRequestException'
-import NotFoundException from 'App/Exceptions/NotFoundException'
 import Project from 'App/Models/Project'
+import ProjectQuery from 'App/Queries/ProjectQuery'
 import PaginationUtil from 'App/Shared/Utils/PaginationUtil'
 import ProjectCreateValidator from 'App/Validators/ProjectCreateValidator'
 import ProjectUpdateValidator from 'App/Validators/ProjectUpdateValidator'
@@ -33,20 +32,9 @@ export default class ProjectsController {
   }
 
   public async findById({ bouncer, request }: HttpContextContract) {
-    const projectId = +request.param('id')
-
-    if (!projectId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('view', project)
-
     return project
   }
 
@@ -59,40 +47,17 @@ export default class ProjectsController {
   }
 
   public async update({ request, bouncer }: HttpContextContract) {
-    const projectId = +request.param('id')
-
-    if (!projectId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('update', project)
-
     const payload = await request.validate(ProjectUpdateValidator)
-
     return project.merge(payload).save()
   }
 
   public async delete({ bouncer, request }: HttpContextContract) {
-    const projectId = +request.param('id')
-
-    if (!projectId) {
-      throw new BadRequestException()
-    }
-
-    const project = await Project.find(projectId)
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
+    const projectId: number = request.param('id')
+    const project = await ProjectQuery.findByIdOrFail(projectId)
     await bouncer.with('ProjectPolicy').authorize('delete', project)
-
     return await project.delete()
   }
 }
